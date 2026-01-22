@@ -1,0 +1,12 @@
+# Environnement
+.env
+
+# Base de données locale
+*.db
+
+# Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
