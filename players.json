@@ -1,0 +1,29 @@
+[
+    {
+        "id": "54434c61-660d-4c48-896e-8cd9d72a3f75",
+        "name": "Mbappe",
+        "position": "Attaquant",
+        "age": 25,
+        "club": "Psg"
+    },
+    {
+        "id": "57cff35d-75f1-4965-9ab4-28bc00ed8dc6",
+        "name": "Ousmane dembele",
+        "position": "Attaquant",
+        "age": 30,
+        "club": "PSG"
+    },
+    {
+        "id": "feb6d41b-86dc-4ae9-85f2-54145e75c9ec",
+        "name": "Achraf Hakimi",
+        "position": "defenseur",
+        "age": 24,
+        "club": "psg"
+    },
+    {
+        "name": "Kylian Mbappe",
+        "position": "Attaquant",
+        "age": 26,
+        "club": "Real Madrid "
+    }
+]
