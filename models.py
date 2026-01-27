@@ -1,21 +1,14 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class Player:
-    def __init__(self, name, age, position):
-        self.name = name
-        self.age = age
-        self.position = position
+    id: int
+    name: str
+    position: str
+    age: int
 
-    def __repr__(self):
-        return f"{self.name} ({self.position}, {self.age} ans)"
-
-
-class Team:
-    def __init__(self, name):
-        self.name = name
-        self.players = []
-
-    def add_player(self, player):
-        self.players.append(player)
-
-    def __repr__(self):
-        return f"Equipe {self.name} - {len(self.players)} joueurs"
-
+    @staticmethod
+    def from_row(row: tuple) -> "Player":
+        # row = (id, name, position, age)
+        return Player(id=row[0], name=row[1], position=row[2], age=row[3])

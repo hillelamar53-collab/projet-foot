@@ -1,64 +1,44 @@
-import sqlite3
-
-db_name = "foot.db"
-conn = sqlite3.connect(db_name)
-cursor = conn.cursor()
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS equipes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nom TEXT NOT NULL,
-    ville TEXT NOT NULL
-)
-""")
-conn.commit()
-# Insertion des equipes
-cursor.execute(
-    "INSERT INTO equipes (nom, ville) VALUES (?, ?)",
-    ("PSG", "Paris")
+from manager import (
+    add_player_cli,
+    list_players,
+    delete_player_cli,
+    update_player_cli,
 )
 
-cursor.execute(
-    "INSERT INTO equipes (nom, ville) VALUES (?, ?)",
-    ("OM", "Marseille")
-)
 
-conn.commit()
-# Lecture des equipes
-cursor.execute("SELECT * FROM equipes")
-equipes = cursor.fetchall()
+def show_menu():
+    print("\n⚽ FOOT PLAYER MANAGER")
+    print("1. Ajouter un joueur")
+    print("2. Voir les joueurs")
+    print("3. Supprimer un joueur")
+    print("4. Modifier un joueur")
+    print("0. Quitter")
 
-print("Liste des équipes :")
-for equipe in equipes:
-    print(equipe)
-# Mise à jour d'une equipe
-cursor.execute(
-    "UPDATE equipes SET ville = ? WHERE nom = ?",
-    ("Saint-Germain", "PSG")
-)
 
-conn.commit()
-# Suppression d'une equipe
-cursor.execute(
-    "DELETE FROM equipes WHERE nom = ?",
-    ("OM",)
-)
+def main():
+    while True:
+        show_menu()
+        choice = input("Ton choix : ").strip()
 
-conn.commit()
-# Suppression d'une equipe
-cursor.execute(
-    "DELETE FROM equipes WHERE nom = ?",
-    ("OM",)
-)
+        if choice == "1":
+            add_player_cli()
 
-conn.commit()
+        elif choice == "2":
+            list_players()
 
-# Vérification finale
-cursor.execute("SELECT * FROM equipes")
-equipes = cursor.fetchall()
+        elif choice == "3":
+            delete_player_cli()
 
-print("Liste finale des équipes :")
-for equipe in equipes:
-    print(equipe)
+        elif choice == "4":
+            update_player_cli()
 
-# Fermeture de la connexion
-conn.close()
+        elif choice == "0":
+            print("👋 Bye !")
+            break
+
+        else:
+            print("❌ Choix invalide")
+
+
+if __name__ == "__main__":
+    main()
