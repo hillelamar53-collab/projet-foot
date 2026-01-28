@@ -1,8 +1,11 @@
 from storage import load_players, save_players
+from faker import Faker
+
+fake = Faker("fr_FR")
 
 
 # =========================
-# AJOUTER UN JOUEUR
+# AJOUTER UN JOUEUR (MANUEL)
 # =========================
 def add_player_cli():
     name = input("Nom du joueur : ")
@@ -21,23 +24,42 @@ def add_player_cli():
 
     players.append(player)
     save_players(players)
-
-    print("✅ Joueur ajouté")
+    print("✅ Joueur ajouté avec succès")
 
 
 # =========================
-# LISTER LES JOUEURS
+# AJOUTER UN JOUEUR (FAKER)
+# =========================
+def add_fake_player():
+    players = load_players()
+
+    player = {
+        "name": fake.name(),
+        "position": fake.random_element(
+            elements=("Attaquant", "Milieu", "Défenseur", "Gardien")
+        ),
+        "age": fake.random_int(min=17, max=40),
+        "club": fake.company()
+    }
+
+    players.append(player)
+    save_players(players)
+    print("🤖 Joueur fictif ajouté avec Faker")
+
+
+# =========================
+# AFFICHER LES JOUEURS
 # =========================
 def list_players():
     players = load_players()
 
     if not players:
-        print("📭 Aucun joueur enregistré")
+        print("⚠️ Aucun joueur enregistré")
         return
 
-    print("\n📋 Liste des joueurs")
-    for p in players:
-        print(f"- {p['name']} | {p['position']} | {p['age']} ans | {p['club']}")
+    print("\n📋 Liste des joueurs :")
+    for i, p in enumerate(players, start=1):
+        print(f"{i}. {p['name']} | {p['position']} | {p['age']} ans | {p['club']}")
 
 
 # =========================
@@ -50,9 +72,7 @@ def delete_player_cli():
         print("⚠️ Aucun joueur à supprimer")
         return
 
-    print("\n📋 Joueurs :")
-    for i, p in enumerate(players, start=1):
-        print(f"{i}. {p['name']} | {p['position']} | {p['age']} ans | {p['club']}")
+    list_players()
 
     try:
         choice = int(input("Numéro du joueur à supprimer : "))
@@ -65,50 +85,33 @@ def delete_player_cli():
 
     removed = players.pop(choice - 1)
     save_players(players)
-
-    print(f"✅ Joueur supprimé : {removed['name']}")
+    print(f"🗑️ Joueur supprimé : {removed['name']}")
 
 
 # =========================
-# MODIFIER UN JOUEUR
+# MENU PRINCIPAL
 # =========================
-def update_player_cli():
-    players = load_players()
+def menu():
+    while True:
+        print("\n⚽ FOOT PLAYER MANAGER")
+        print("1. Ajouter un joueur (manuel)")
+        print("2. Ajouter un joueur (faker)")
+        print("3. Voir les joueurs")
+        print("4. Supprimer un joueur")
+        print("0. Quitter")
 
-    if not players:
-        print("⚠️ Aucun joueur à modifier")
-        return
+        choice = input("Ton choix : ")
 
-    print("\n📋 Joueurs :")
-    for i, p in enumerate(players, start=1):
-        print(f"{i}. {p['name']} | {p['position']} | {p['age']} ans | {p['club']}")
-
-    try:
-        choice = int(input("Numéro du joueur à modifier : "))
-        if choice < 1 or choice > len(players):
+        if choice == "1":
+            add_player_cli()
+        elif choice == "2":
+            add_fake_player()
+        elif choice == "3":
+            list_players()
+        elif choice == "4":
+            delete_player_cli()
+        elif choice == "0":
+            print("👋 Bye")
+            break
+        else:
             print("❌ Choix invalide")
-            return
-    except ValueError:
-        print("❌ Entrée invalide")
-        return
-
-    player = players[choice - 1]
-
-    print("\n✏️ Laisser vide pour conserver la valeur actuelle")
-    name = input(f"Nom ({player['name']}) : ") or player["name"]
-    position = input(f"Poste ({player['position']}) : ") or player["position"]
-
-    age_input = input(f"Âge ({player['age']}) : ")
-    age = int(age_input) if age_input else player["age"]
-
-    club = input(f"Club ({player['club']}) : ") or player["club"]
-
-    player.update({
-        "name": name,
-        "position": position,
-        "age": age,
-        "club": club
-    })
-
-    save_players(players)
-    print("✅ Joueur modifié avec succès")

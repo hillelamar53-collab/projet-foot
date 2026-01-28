@@ -31,3 +31,7 @@ projet_foot/
 ├── players.json    # Players data (JSON storage)
 ├── requirements.txt
 └── README.md
+## ▶️ How to Run
+
+```bash
+python main.py
