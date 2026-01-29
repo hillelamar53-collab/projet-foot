@@ -1,117 +1,89 @@
-from storage import load_players, save_players
 from faker import Faker
+import json
+import os
 
-fake = Faker("fr_FR")
+fake = Faker()
+PLAYERS_FILE = "players.json"
 
+# ---------- STORAGE ----------
 
-# =========================
-# AJOUTER UN JOUEUR (MANUEL)
-# =========================
-def add_player_cli():
-    name = input("Nom du joueur : ")
-    position = input("Poste : ")
-    age = int(input("Âge : "))
-    club = input("Club : ")
+def load_players():
+    if not os.path.exists(PLAYERS_FILE):
+        return []
+    with open(PLAYERS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
+def save_players(players):
+    with open(PLAYERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(players, f, indent=4, ensure_ascii=False)
+
+# ---------- HELPERS ----------
+
+def list_players_cli():
     players = load_players()
-
-    player = {
-        "name": name,
-        "position": position,
-        "age": age,
-        "club": club
-    }
-
-    players.append(player)
-    save_players(players)
-    print("✅ Joueur ajouté avec succès")
-
-
-# =========================
-# AJOUTER UN JOUEUR (FAKER)
-# =========================
-def add_fake_player():
-    players = load_players()
-
-    player = {
-        "name": fake.name(),
-        "position": fake.random_element(
-            elements=("Attaquant", "Milieu", "Défenseur", "Gardien")
-        ),
-        "age": fake.random_int(min=17, max=40),
-        "club": fake.company()
-    }
-
-    players.append(player)
-    save_players(players)
-    print("🤖 Joueur fictif ajouté avec Faker")
-
-
-# =========================
-# AFFICHER LES JOUEURS
-# =========================
-def list_players():
-    players = load_players()
-
     if not players:
         print("⚠️ Aucun joueur enregistré")
         return
-
-    print("\n📋 Liste des joueurs :")
     for i, p in enumerate(players, start=1):
-        print(f"{i}. {p['name']} | {p['position']} | {p['age']} ans | {p['club']}")
+        print(f"{i}. {p['name']} - {p['position']} - {p['age']} ans")
 
+# ---------- CRUD ----------
 
-# =========================
-# SUPPRIMER UN JOUEUR
-# =========================
+def add_player_cli():
+    name = input("Nom : ")
+    position = input("Poste : ")
+    age = input("Âge : ")
+
+    players = load_players()
+    players.append({
+        "name": name,
+        "position": position,
+        "age": age
+    })
+    save_players(players)
+    print("✅ Joueur ajouté")
+
+def add_fake_player_cli():
+    players = load_players()
+    players.append({
+        "name": fake.name(),
+        "position": fake.job(),
+        "age": fake.random_int(min=18, max=40)
+    })
+    save_players(players)
+    print("🤖 Faux joueur ajouté")
+
 def delete_player_cli():
     players = load_players()
-
     if not players:
         print("⚠️ Aucun joueur à supprimer")
         return
 
-    list_players()
-
+    list_players_cli()
     try:
-        choice = int(input("Numéro du joueur à supprimer : "))
-        if choice < 1 or choice > len(players):
-            print("❌ Choix invalide")
-            return
-    except ValueError:
-        print("❌ Entrée invalide")
+        index = int(input("Numéro du joueur à supprimer : "))
+        removed = players.pop(index - 1)
+        save_players(players)
+        print(f"🗑 Joueur supprimé : {removed['name']}")
+    except (ValueError, IndexError):
+        print("❌ Choix invalide")
+
+def update_player_cli():
+    players = load_players()
+    if not players:
+        print("⚠️ Aucun joueur à modifier")
         return
 
-    removed = players.pop(choice - 1)
-    save_players(players)
-    print(f"🗑️ Joueur supprimé : {removed['name']}")
+    list_players_cli()
+    try:
+        index = int(input("Numéro du joueur à modifier : "))
+        player = players[index - 1]
 
+        player["name"] = input(f"Nom ({player['name']}) : ") or player["name"]
+        player["position"] = input(f"Poste ({player['position']}) : ") or player["position"]
+        player["age"] = input(f"Âge ({player['age']}) : ") or player["age"]
 
-# =========================
-# MENU PRINCIPAL
-# =========================
-def menu():
-    while True:
-        print("\n⚽ FOOT PLAYER MANAGER")
-        print("1. Ajouter un joueur (manuel)")
-        print("2. Ajouter un joueur (faker)")
-        print("3. Voir les joueurs")
-        print("4. Supprimer un joueur")
-        print("0. Quitter")
-
-        choice = input("Ton choix : ")
-
-        if choice == "1":
-            add_player_cli()
-        elif choice == "2":
-            add_fake_player()
-        elif choice == "3":
-            list_players()
-        elif choice == "4":
-            delete_player_cli()
-        elif choice == "0":
-            print("👋 Bye")
-            break
-        else:
-            print("❌ Choix invalide")
+        save_players(players)
+        print("✏️ Joueur modifié")
+    except (ValueError, IndexError):
+        print("❌ Choix invalide")
