@@ -1,0 +1,7 @@
+name,position,age,team,id,role_type,age_is_outlier,age_bucket,is_age_outlier
+Desire Doue,milieu,22,Psg,,football,False,20-23,False
+Kelly Coleman,Financial trader,28,,,other,False,24-28,False
+Tyler Petersen,General practice doctor,36,,,other,False,34+,False
+Melissa Rogers,Office manager,21,,,other,False,20-23,False
+Lionel Messi,Attaquant,36,Inter Miami,23bb57f8-fcdb-4c7c-b614-2e859b38e12f,football,False,34+,False
+Test Hillel 001,Milieu,25,PSG,a5fac9da-1fd3-4ee4-a55e-ff24532c44db,football,False,24-28,False
