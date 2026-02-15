@@ -1,147 +1,84 @@
 import sqlite3
 from pathlib import Path
 
-# =========================
-# DATABASE CONFIG
-# =========================
-
-DB_PATH = Path(__file__).parent / "foot.db"
+DB_PATH = Path(__file__).resolve().parent / "foot.db"
 
 
-def get_connection():
+def get_conn():
     return sqlite3.connect(DB_PATH)
 
 
-# =========================
-# TABLES
-# =========================
-
-def create_tables():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS teams (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE NOT NULL
+def init_db():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS players (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            age INTEGER NOT NULL,
+            position TEXT NOT NULL,
+            club TEXT NOT NULL
+        )
+        """
     )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS players (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        position TEXT,
-        age INTEGER,
-        nationality TEXT,
-        club TEXT,
-        rating INTEGER,
-        team_id INTEGER,
-        FOREIGN KEY (team_id) REFERENCES teams(id)
-    )
-    """)
-
     conn.commit()
     conn.close()
 
 
-# =========================
-# TEAMS
-# =========================
-
-def save_team(name: str):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "INSERT OR IGNORE INTO teams (name) VALUES (?)",
-        (name,)
+def add_player(name: str, age: int, position: str, club: str):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO players (name, age, position, club) VALUES (?, ?, ?, ?)",
+        (name, age, position, club),
     )
-
-    conn.commit()
-    conn.close()
-
-
-def get_team_id(name: str):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT id FROM teams WHERE name = ?",
-        (name,)
-    )
-
-    row = cursor.fetchone()
-    conn.close()
-
-    return row[0] if row else None
-
-
-# =========================
-# PLAYERS
-# =========================
-
-def add_player(name, position, age, nationality, club, rating, team_name):
-    team_id = get_team_id(team_name)
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO players (name, position, age, nationality, club, rating, team_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (name, position, age, nationality, club, rating, team_id))
-
     conn.commit()
     conn.close()
 
 
 def list_players():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT players.id, players.name, position, age, nationality, club, rating, teams.name
-        FROM players
-        LEFT JOIN teams ON players.team_id = teams.id
-    """)
-
-    rows = cursor.fetchall()
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT id, name, age, position, club FROM players ORDER BY id ASC")
+    rows = cur.fetchall()
     conn.close()
-
     return rows
 
 
 def delete_player(player_id: int):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "DELETE FROM players WHERE id = ?",
-        (player_id,)
-    )
-
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM players WHERE id = ?", (player_id,))
     conn.commit()
     conn.close()
 
 
-def update_player(player_id: int, **fields):
-    allowed = {"name", "position", "age", "nationality", "club", "rating"}
+def update_player(player_id: int, name=None, age=None, position=None, club=None):
+    # Build dynamic update based on provided fields
+    fields = []
+    values = []
 
-    updates = {k: v for k, v in fields.items() if k in allowed}
-    if not updates:
-        return
+    if name is not None:
+        fields.append("name = ?")
+        values.append(name)
+    if age is not None:
+        fields.append("age = ?")
+        values.append(age)
+    if position is not None:
+        fields.append("position = ?")
+        values.append(position)
+    if club is not None:
+        fields.append("club = ?")
+        values.append(club)
 
-    set_clause = ", ".join(f"{k} = ?" for k in updates.keys())
-    params = list(updates.values()) + [player_id]
+    if not fields:
+        return  # nothing to update
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    values.append(player_id)
 
-    cursor.execute(
-        f"UPDATE players SET {set_clause} WHERE id = ?",
-        params
-    )
-
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(f"UPDATE players SET {', '.join(fields)} WHERE id = ?", values)
     conn.commit()
     conn.close()

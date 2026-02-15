@@ -1,69 +1,24 @@
-import json
 import os
-import uuid
+import requests
+from dotenv import load_dotenv
 
-FILE_PATH = "players.json"
+load_dotenv()
 
+API_TOKEN = os.getenv("SPORTMONKS_API_TOKEN")
+BASE_URL = os.getenv("SPORTMONKS_BASE_URL")
 
-# =========================
-# CHARGER LES JOUEURS
-# =========================
-def load_players():
-    if not os.path.exists(FILE_PATH):
-        return []
+if not API_TOKEN or not BASE_URL:
+    raise RuntimeError("❌ Variables d’environnement manquantes")
 
-    with open(FILE_PATH, "r") as f:
-        return json.load(f)
+def get_countries():
+    url = f"{BASE_URL}/countries"
+    params = {"api_token": API_TOKEN}
 
+    r = requests.get(url, params=params)
+    print("STATUS:", r.status_code)
 
-# =========================
-# SAUVEGARDER LES JOUEURS
-# =========================
-def save_players(players):
-    with open(FILE_PATH, "w") as f:
-        json.dump(players, f, indent=4)
+    if r.status_code != 200:
+        print(r.text)
+        return None
 
-
-# =========================
-# AJOUTER UN JOUEUR
-# =========================
-def add_player(player: dict):
-    players = load_players()
-
-    # sécurité : id auto si pas fourni
-    if "id" not in player:
-        player["id"] = str(uuid.uuid4())
-
-    players.append(player)
-    save_players(players)
-    return player
-
-
-# =========================
-# MODIFIER UN JOUEUR
-# =========================
-def update_player(player_id: str, updates: dict):
-    players = load_players()
-
-    for p in players:
-        if str(p.get("id")) == str(player_id):
-            p.update(updates)
-            save_players(players)
-            return p
-
-    raise ValueError("Player not found")
-
-
-# =========================
-# SUPPRIMER UN JOUEUR
-# =========================
-def delete_player(player_id: str):
-    players = load_players()
-
-    new_players = [p for p in players if str(p.get("id")) != str(player_id)]
-
-    if len(new_players) == len(players):
-        raise ValueError("Player not found")
-
-    save_players(new_players)
-    return True
+    return r.json()
