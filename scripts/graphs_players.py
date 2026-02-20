@@ -4,101 +4,54 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
+print("\nLoading players_final.csv...")
 
-# ============================================
-# 1. Charger les données
-# ============================================
+# Charger le fichier CSV
+df = pd.read_csv("players_final.csv")
 
-df = pd.read_csv("players_clean.csv")
+print("File loaded successfully.")
+print(f"Number of players: {len(df)}")
 
-print("Data loaded:")
-print(df.head())
+# Vérifier que la colonne team existe
+if 'team' not in df.columns:
+    print("\nERROR: Column 'team' not found.")
+    print("Available columns:")
+    print(df.columns)
+    exit()
 
+# Créer le dossier plots s'il n'existe pas
+os.makedirs("plots", exist_ok=True)
 
-# ============================================
-# 2. Créer le dossier plots si nécessaire
-# ============================================
+# ==========================
+# GRAPH 1: Players by Team
+# ==========================
 
-if not os.path.exists("plots"):
-    os.makedirs("plots")
+players_by_team = df['team'].value_counts()
 
+plt.figure(figsize=(12, 6))
 
-# ============================================
-# 3. GRAPH 1 — Players per team
-# ============================================
+players_by_team.plot(
+    kind='bar',
+    color='skyblue',
+    edgecolor='black'
+)
 
-team_counts = df["team"].value_counts().head(10)
-
-print("\nPlayers per team:")
-print(team_counts)
-
-plt.figure(figsize=(10,6))
-
-team_counts.plot(kind="bar")
-
-plt.title("Top 10 Teams by Number of Players")
-plt.xlabel("Team")
-plt.ylabel("Number of Players")
+plt.title("Number of Players by Team", fontsize=16)
+plt.xlabel("Team", fontsize=12)
+plt.ylabel("Number of Players", fontsize=12)
 
 plt.xticks(rotation=45)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 plt.tight_layout()
 
-plt.savefig("plots/players_by_team.png")
+# Sauvegarder le graphique
+save_path = "plots/players_by_team.png"
+plt.savefig(save_path)
 
+print(f"\nGraph saved to: {save_path}")
+
+# Afficher le graphique
 plt.show()
 
-
-# ============================================
-# 4. GRAPH 2 — Players per age
-# ============================================
-
-age_counts = df["age"].value_counts().sort_index()
-
-print("\nPlayers per age:")
-print(age_counts)
-
-plt.figure(figsize=(10,6))
-
-age_counts.plot(kind="bar")
-
-plt.title("Number of Players per Age")
-plt.xlabel("Age")
-plt.ylabel("Number of Players")
-
-plt.tight_layout()
-
-plt.savefig("plots/age_histogram.png")
-
-plt.show()
-
-
-# ============================================
-# 5. GRAPH 3 — Players per position (if exists)
-# ============================================
-
-if "position" in df.columns:
-
-    position_counts = df["position"].value_counts().head(10)
-
-    print("\nPlayers per position:")
-    print(position_counts)
-
-    plt.figure(figsize=(10,6))
-
-    position_counts.plot(kind="bar")
-
-    plt.title("Top 10 Positions")
-    plt.xlabel("Position")
-    plt.ylabel("Number of Players")
-
-    plt.xticks(rotation=45)
-
-    plt.tight_layout()
-
-    plt.savefig("plots/players_by_position.png")
-
-    plt.show()
-
-
-print("\nAll graphs generated and saved in /plots")
+print("\nAll graphs generated successfully.\n")
